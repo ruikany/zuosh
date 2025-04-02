@@ -136,7 +136,6 @@ int compare_lines(const void *a, const void *b) {
   return strcmp(*str1, *str2);
 }
 
-// ascii sort
 int zsort(char *filename) {
   FILE *file = fopen(filename, "r");
   if (!file) {
@@ -155,6 +154,7 @@ int zsort(char *filename) {
       char **temp = realloc(lines, capacity * sizeof(char *));
       lines = temp;
     }
+
     lines[i] = strdup(buffer);
     i++;
   }
@@ -169,6 +169,40 @@ int zsort(char *filename) {
   return 0;
 }
 
-// todo........
-// binary sort
-int zsort2(char *filename) { return 0; }
+int zrev(char *filename) {
+  FILE *file = fopen(filename, "r");
+  if (!file) {
+    file_doesnt_exist(filename);
+    return 1;
+  }
+  char *buffer = NULL;
+  size_t size = 0;
+  ssize_t chars_read;
+  size_t capacity = 10;
+  char **lines = malloc(capacity * sizeof(char *));
+  int i = 0;
+  while ((chars_read = getline(&buffer, &size, file)) != -1) {
+    if (i >= capacity) {
+      capacity *= 2;
+      char **temp = realloc(lines, capacity * sizeof(char *));
+      lines = temp;
+    }
+
+    lines[i] = strdup(buffer);
+    i++;
+  }
+  printf("Stored %d lines:\n", i);
+  for (int k = 0; k < i; k++) {
+    printf("[%d]: %s", k, lines[k]);
+  }
+
+  for (int j = i - 1; j >= 0; j--) {
+    printf("%s", lines[j]);
+    free(lines[j]);
+  }
+
+  free(buffer);
+  free(lines);
+  fclose(file);
+  return 0;
+}

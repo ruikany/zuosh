@@ -1,6 +1,6 @@
 up and down arrow keys to scroll through command history
 tab to show all existing commands starting from input
-sort by ~~1) text based,~~ 2) by binary
+sort by ~~1) text based,~~ 2) by binary executables, but would be for comparing files? no line concept in binary...
 reverse
 
 add batch mode

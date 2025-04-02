@@ -37,10 +37,16 @@ int interpret(int argc, char *argv[]) {
     zunzip(&argv[1], argc - 1);
   } else if (strcmp(command, "zsort") == 0) {
     if (argc != 2) {
-      printf("Usage: sort <filename>");
+      printf("Usage: zsort <filename>\n");
       return 1;
     }
     zsort(argv[1]);
+  } else if (strcmp(command, "zrev") == 0) {
+    if (argc != 2) {
+      printf("Usage: zrev <filename>\n");
+      return 1;
+    }
+    zrev(argv[1]);
   } else if (strcmp(command, "exit") == 0) {
     quit();
   } else {
