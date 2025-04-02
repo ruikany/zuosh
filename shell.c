@@ -11,6 +11,22 @@ int interpret(int argc, char *argv[]) {
   char *command = argv[0];
 
   // command selection
+  if (strcmp(command, "help") == 0) {
+    printf("Available commands:\n");
+    printf("  zcat <filename>                      - display file contents\n");
+    printf(
+        "  zgrep <search_term> <filename(s)>    - search for text in files\n");
+    printf(
+        "  zzip <filename(s)>                   - compress files using RLE\n");
+    printf("  zunzip <filename(s)>                 - decompress RLE-compressed "
+           "files\n");
+    printf("  zsort <filename>                     - sort file contents\n");
+    printf("  zrev <filename>                      - reverse file contents\n");
+    printf("  exit                                 - exit the program\n");
+    printf("  help                                 - show this help message\n");
+    return EXIT_SUCCESS;
+  }
+
   if (strcmp(command, "zcat") == 0) { // command is on argv[1]
     if (argc != 2) {
       printf("Usage: zcat <filename>\n");
