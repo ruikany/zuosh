@@ -99,7 +99,7 @@ int parseInput(char *input) {
     token = strtok(NULL, " ");
   }
 
-  // should_exit flag so that the above strdup can be cleaned up. Instead of
+  // should_exit flag so that the above tokens[] can be cleaned up. Instead of
   // exiting in interpret() and never reaching clean up
   int should_exit = 0;
   if (num_of_tokens > 0 && strcmp(tokens[0], "exit") == 0) {
@@ -116,7 +116,7 @@ int parseInput(char *input) {
 }
 
 int main() {
-  printf("zuosh\n");
+  printf("zuosh123\n");
   enable_rmode();
   init_history();
 

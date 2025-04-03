@@ -20,6 +20,10 @@ void init_history() {
 
 // check bounds first, THEN update position if in bounds
 char *peek_history(int direction) {
+  for (int i = 0; i < HISTORY_SIZE; i++) {
+    printf("\n%d: %s\n", i, history->commands[i]);
+  }
+
   if (history->count == 0)
     return NULL;
 
@@ -27,15 +31,20 @@ char *peek_history(int direction) {
     history->current_pos = history->tail;
     return history->commands[history->current_pos];
   }
-
   int new_pos = history->current_pos + direction;
+  printf("h: %d", history->head);
+  printf("t: %d", history->tail);
+  printf("n: %d\n", new_pos);
+  printf("c: %d\n", history->current_pos);
   if (history->tail >= history->head) {
     if (new_pos < history->head || new_pos > history->tail)
       return NULL;
   } else {
-    if ((direction > 0 && new_pos > history->tail && new_pos < history->head) ||
-        (direction < 0 && new_pos < history->head && new_pos > history->tail))
+    if (direction > 0 && new_pos == history->head) { // newest
       return NULL;
+    } else if (direction < 0 && new_pos == history->tail) { // oldest
+      return NULL;
+    }
   }
 
   if (new_pos < 0)
@@ -44,6 +53,7 @@ char *peek_history(int direction) {
     new_pos = 0;
 
   history->current_pos = new_pos;
+  printf("normal\n");
   return history->commands[history->current_pos];
 }
 
