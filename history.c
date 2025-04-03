@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -17,28 +18,33 @@ void init_history() {
   }
 }
 
-char *peek_history(int direction) { // actually, could just copy to new array
-  char *command = NULL;
+// check bounds first, THEN update position if in bounds
+char *peek_history(int direction) {
   if (history->count == 0)
-    return command;
+    return NULL;
 
   if (history->current_pos == -1) {
     history->current_pos = history->tail;
-  } else {
-    history->current_pos = (history->current_pos + direction) % HISTORY_SIZE;
+    return history->commands[history->current_pos];
   }
 
-  if (direction == -1) {
-    if (history->current_pos == history->head) {
-      command = history->commands[history->head];
-    }
-    return history->commands[history->current_pos];
+  int new_pos = history->current_pos + direction;
+  if (history->tail >= history->head) {
+    if (new_pos < history->head || new_pos > history->tail)
+      return NULL;
   } else {
-    if (history->current_pos == (history->tail + 1) % HISTORY_SIZE) {
-      command = NULL;
-    }
+    if ((direction > 0 && new_pos > history->tail && new_pos < history->head) ||
+        (direction < 0 && new_pos < history->head && new_pos > history->tail))
+      return NULL;
   }
-  return command;
+
+  if (new_pos < 0)
+    new_pos = HISTORY_SIZE - 1;
+  if (new_pos >= HISTORY_SIZE)
+    new_pos = 0;
+
+  history->current_pos = new_pos;
+  return history->commands[history->current_pos];
 }
 
 void add_to_history(char *command) {

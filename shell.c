@@ -27,9 +27,8 @@ void enable_rmode() {
 int interpret(int argc, char *argv[]) {
   char *command = argv[0];
 
-  // command selection
   if (strcmp(command, "help") == 0) {
-    printf("Available commands:\n");
+    printf("\nAvailable commands:\n");
     printf("  zcat <filename>                      - display file contents\n");
     printf(
         "  zgrep <search_term> <filename(s)>    - search for text in files\n");
@@ -46,44 +45,44 @@ int interpret(int argc, char *argv[]) {
 
   if (strcmp(command, "zcat") == 0) { // command is on argv[1]
     if (argc != 2) {
-      printf("Usage: zcat <filename>\n");
+      printf("\nUsage: zcat <filename>");
       return EXIT_FAILURE;
     }
     zcat(argv[1]);
   } else if (strcmp(command, "zgrep") == 0) {
     if (argc < 3) {
-      printf("Usage: zgrep <search_term> <filename(s)>\n");
+      printf("\nUsage: zgrep <search_term> <filename(s)>");
       return EXIT_FAILURE;
     }
     zgrep(argv[1], &argv[2], argc - 2);
   } else if (strcmp(command, "zzip") == 0) { // does RLE
     if (argc < 2) {
-      printf("Usage: zzip <filename(s)>\n");
+      printf("\nUsage: zzip <filename(s)>");
       return EXIT_FAILURE;
     }
     zzip(&argv[1], argc - 1);
   } else if (strcmp(command, "zunzip") == 0) {
     if (argc < 2) {
-      printf("Usage: zunzip <filename(s)>\n");
+      printf("\nUsage: zunzip <filename(s)>");
       return EXIT_FAILURE;
     }
     zunzip(&argv[1], argc - 1);
   } else if (strcmp(command, "zsort") == 0) {
     if (argc != 2) {
-      printf("Usage: zsort <filename>\n");
+      printf("\nUsage: zsort <filename>");
       return EXIT_FAILURE;
     }
     zsort(argv[1]);
   } else if (strcmp(command, "zrev") == 0) {
     if (argc != 2) {
-      printf("Usage: zrev <filename>\n");
+      printf("\nUsage: zrev <filename>");
       return EXIT_FAILURE;
     }
     zrev(argv[1]);
   } else if (strcmp(command, "exit") == 0) {
     quit();
   } else {
-    fprintf(stderr, "COMMAND DOES NOT EXIST: %s\n", command);
+    fprintf(stderr, "\nCOMMAND DOES NOT EXIST: %s", command);
     return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
@@ -100,11 +99,20 @@ int parseInput(char *input) {
     token = strtok(NULL, " ");
   }
 
-  int errorCode = interpret(num_of_tokens, tokens);
+  // should_exit flag so that the above strdup can be cleaned up. Instead of
+  // exiting in interpret() and never reaching clean up
+  int should_exit = 0;
+  if (num_of_tokens > 0 && strcmp(tokens[0], "exit") == 0) {
+    should_exit = 1;
+  }
+  interpret(num_of_tokens, tokens);
   for (int i = 0; i < num_of_tokens; i++) {
     free(tokens[i]);
   }
-  return errorCode;
+
+  if (should_exit)
+    exit(0);
+  return 0;
 }
 
 int main() {
@@ -119,7 +127,7 @@ int main() {
 
   while (1) {
     if (isatty(STDIN_FILENO)) {
-      printf("\r>> %s", inputBuffer);
+      printf("\r\033[K> %s", inputBuffer);
       fflush(stdout);
     }
 
@@ -131,23 +139,24 @@ int main() {
     }
 
     if (c == '\x1B') {
-      unsigned char seq[2];
-      if (read(STDIN_FILENO, &seq[0], 1) != 1)
+      unsigned char sequence[2];
+      if (read(STDIN_FILENO, &sequence[0], 1) != 1)
         continue;
-      if (read(STDIN_FILENO, &seq[1], 1) != 1)
+      if (read(STDIN_FILENO, &sequence[1], 1) != 1)
         continue;
 
-      if (seq[0] == '[') {
+      // arrow keys: A for up, B for down
+      if (sequence[0] == '[') {
         char *historyCmd = NULL;
-        switch (seq[1]) {
-        case 'A': // Up arrow
+        switch (sequence[1]) {
+        case 'A':
           historyCmd = peek_history(-1);
           if (historyCmd) {
             strncpy(inputBuffer, historyCmd, MAX_USER_INPUT);
             inputPos = strlen(inputBuffer);
           }
           continue;
-        case 'B': // Down arrow
+        case 'B':
           historyCmd = peek_history(1);
           if (historyCmd) {
             strncpy(inputBuffer, historyCmd, MAX_USER_INPUT);
@@ -160,28 +169,26 @@ int main() {
         }
       }
     }
-    // Handle Enter key
+    // enter key
     else if (c == '\n') {
       if (inputPos > 0) {
-        // Add to history and process
         add_to_history(inputBuffer);
         errorCode = parseInput(inputBuffer);
 
-        // Clear input buffer
         inputBuffer[0] = '\0';
         inputPos = 0;
       }
       printf("\n");
       continue;
     }
-    // Handle backspace
-    else if (c == 127 || c == '\b') { // Backspace/Delete
+    // backspace
+    else if (c == 127 || c == '\b') {
       if (inputPos > 0) {
         inputBuffer[--inputPos] = '\0';
       }
       continue;
     }
-    // Regular character input
+    // regular input
     else if (isprint(c) && inputPos < MAX_USER_INPUT - 1) {
       inputBuffer[inputPos++] = c;
       inputBuffer[inputPos] = '\0';
@@ -191,59 +198,3 @@ int main() {
   free(userInput);
   return errorCode;
 }
-
-// int main() {
-//   printf("zuosh\n");
-//   enable_rmode();
-//   init_history();
-//
-//   char *userInput = NULL;
-//   size_t len = 0;
-//   ssize_t rread;
-//   int errorCode = 0;
-//
-//   while (1) {
-//     if (isatty(STDIN_FILENO)) {
-//       printf(">> ");
-//       fflush(stdout);
-//     }
-//
-//     rread = getline(&userInput, &len, stdin);
-//     if (rread == -1) {
-//       if (feof(stdin)) {
-//         break;
-//       } else {
-//         perror("getline failed");
-//         exit(1);
-//       }
-//     }
-//     unsigned char c;
-//     read(STDIN_FILENO, &c, 1);
-//
-//     if (c == '\x1B') { // Escape sequence
-//       unsigned char seq[2];
-//       if (read(STDIN_FILENO, &seq[0], 1) != 1)
-//         continue;
-//       if (read(STDIN_FILENO, &seq[1], 1) != 1)
-//         continue;
-//
-//       if (seq[0] == '[') {
-//         switch (seq[1]) {
-//         case 'A':
-//           peek_history(-1);
-//           continue;
-//         case 'B':
-//           peek_history(1);
-//           continue;
-//         }
-//       }
-//     }
-//
-//     if (rread > 1) {
-//       add_to_history(userInput);
-//       errorCode = parseInput(userInput);
-//     }
-//   }
-//   free(userInput);
-//   return errorCode;
-// }

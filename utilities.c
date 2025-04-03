@@ -3,21 +3,27 @@
 #include <string.h>
 #include <unistd.h>
 
-void quit() {
-  printf("see you next time...\n");
-  exit(0);
+#include "history.h"
+
+int quit() {
+  printf("\nsee you next time...\n");
+  free_history();
+  return 0;
 }
 
 void file_doesnt_exist(char *filename) {
-  fprintf(stderr, "hey, file %s doesn't exist\n", filename);
-  fflush(stderr); // WHAT
+  printf("hey, file %s doesn't exist", filename);
   // so fprintf + fflush works, and printf works, but not fprintf
 }
 
-void zcat(char *filename) {
+int zcat(char *filename) {
+  printf("\n"); // need this println at beginning of each function cause can't
+                // add to end of dynamic inputBuffer
   FILE *file = fopen(filename, "r");
-  if (!file)
+  if (!file) {
     file_doesnt_exist(filename);
+    return 1;
+  }
 
   char *buffer = NULL;
   size_t size = 0;
@@ -27,9 +33,11 @@ void zcat(char *filename) {
   }
   free(buffer);
   fclose(file);
+  return 0;
 }
 
 int zgrep(char *search_term, char *files[], int num_files) {
+  printf("\n");
   char *buffer = NULL;
   size_t size = 0;
   ssize_t chars_read;
@@ -50,11 +58,12 @@ int zgrep(char *search_term, char *files[], int num_files) {
     fclose(file);
   }
   if (!found)
-    printf("Nothing found...\n");
+    printf("\nNothing found...");
   return 0;
 }
 
 int zzip(char *files[], int num_files) {
+  printf("\n");
   char buffer[1024] = {-1}; // can fread up to 1024 bytes in one go
   for (int i = 0; i < num_files; i++) {
     FILE *input_file = fopen(files[i], "r");
@@ -100,7 +109,7 @@ int zzip(char *files[], int num_files) {
 
     printf("Successfully compressed file: %s to %s\n", files[i], output_name);
     if (total_bytes_input < total_bytes_output) {
-      printf("Warning: the compressed file size is actually larger...\n");
+      printf("Warning: the compressed file size is actually larger...");
     }
 
     fclose(input_file);
@@ -110,6 +119,7 @@ int zzip(char *files[], int num_files) {
 }
 
 int zunzip(char *files[], int num_files) {
+  printf("\n");
   for (int i = 0; i < num_files; i++) {
     FILE *compressed_file = fopen(files[i], "rb");
     if (!compressed_file) {
@@ -137,6 +147,7 @@ int compare_lines(const void *a, const void *b) {
 }
 
 int zsort(char *filename) {
+  printf("\n");
   FILE *file = fopen(filename, "r");
   if (!file) {
     file_doesnt_exist(filename);
@@ -170,6 +181,7 @@ int zsort(char *filename) {
 }
 
 int zrev(char *filename) {
+  printf("\n");
   FILE *file = fopen(filename, "r");
   if (!file) {
     file_doesnt_exist(filename);
@@ -190,10 +202,6 @@ int zrev(char *filename) {
 
     lines[i] = strdup(buffer);
     i++;
-  }
-  printf("Stored %d lines:\n", i);
-  for (int k = 0; k < i; k++) {
-    printf("[%d]: %s", k, lines[k]);
   }
 
   for (int j = i - 1; j >= 0; j--) {
