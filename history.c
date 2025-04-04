@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -18,29 +17,31 @@ void init_history() {
   }
 }
 
-// check bounds first, THEN update position if in bounds
 char *peek_history(int direction) {
-  for (int i = 0; i < HISTORY_SIZE; i++) {
-    printf("\n%d: %s\n", i, history->commands[i]);
-  }
-
   if (history->count == 0)
     return NULL;
 
-  if (history->current_pos == -1) {
+  // at empty commandline and press up
+  if (direction < 0 && history->current_pos == -1) {
     history->current_pos = history->tail;
     return history->commands[history->current_pos];
   }
-  int new_pos = history->current_pos + direction;
-  printf("h: %d", history->head);
-  printf("t: %d", history->tail);
-  printf("n: %d\n", new_pos);
-  printf("c: %d\n", history->current_pos);
+
+  // at empty commandline and press down
+  if (direction > 0 && history->current_pos == -1) {
+    return NULL;
+  }
+
+  int new_pos = history->current_pos + direction; // peek function
+  // normal sequence
   if (history->tail >= history->head) {
     if (new_pos < history->head || new_pos > history->tail)
       return NULL;
-  } else {
-    if (direction > 0 && new_pos == history->head) { // newest
+  } else { // wrap-around sequence
+    if (direction > 0 &&
+        new_pos == history->head) { // next after most recent is empty, so make
+                                    // current_pos off the array
+      history->current_pos = -1;
       return NULL;
     } else if (direction < 0 && new_pos == history->tail) { // oldest
       return NULL;
@@ -53,7 +54,6 @@ char *peek_history(int direction) {
     new_pos = 0;
 
   history->current_pos = new_pos;
-  printf("normal\n");
   return history->commands[history->current_pos];
 }
 
