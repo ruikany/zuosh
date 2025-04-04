@@ -145,18 +145,18 @@ int main() {
       if (read(STDIN_FILENO, &sequence[1], 1) != 1)
         continue;
 
-      // arrow keys: A for up, B for down
+      // arrow keys:
       if (sequence[0] == '[') {
         char *historyCmd = NULL;
         switch (sequence[1]) {
-        case 'A':
+        case 'A': // up
           historyCmd = peek_history(-1);
           if (historyCmd) {
             strncpy(inputBuffer, historyCmd, MAX_USER_INPUT);
             inputPos = strlen(inputBuffer);
           }
           continue;
-        case 'B':
+        case 'B': // down
           historyCmd = peek_history(1);
           if (historyCmd) {
             strncpy(inputBuffer, historyCmd, MAX_USER_INPUT);

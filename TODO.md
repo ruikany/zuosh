@@ -8,3 +8,5 @@ add ability to redirect to file
 concurrent execution of commands
 
 refactor so that functions are modular, then use path command to add executables, then add a config file that runs on startup to include default paths
+
+include a TEXT EDITOR
